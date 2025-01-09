@@ -14,17 +14,17 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(node, node2)
 
     def test_url_eq(self):
-        node = TextNode("This is a text node", TextType.BoldText, 'http://localhost')
-        node2 = TextNode("This is a text node", TextType.BoldText, 'http://localhost')
+        node = TextNode("This is a text node", TextType.BoldText, "http://localhost")
+        node2 = TextNode("This is a text node", TextType.BoldText, "http://localhost")
         self.assertEqual(node, node2)
 
     def test_url_not_eq(self):
-        node = TextNode("This is a text node", TextType.BoldText, 'http://boot.dev')
-        node2 = TextNode("This is a text node", TextType.BoldText, 'http://localhost')
+        node = TextNode("This is a text node", TextType.BoldText, "http://boot.dev")
+        node2 = TextNode("This is a text node", TextType.BoldText, "http://localhost")
         self.assertNotEqual(node, node2)
 
     def test_one_url(self):
-        node = TextNode("This is a text node", TextType.BoldText, 'http://boot.dev')
+        node = TextNode("This is a text node", TextType.BoldText, "http://boot.dev")
         node2 = TextNode("This is a text node", TextType.BoldText)
         self.assertNotEqual(node, node2)
 
@@ -34,5 +34,5 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(node, node2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
