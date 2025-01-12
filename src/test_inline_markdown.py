@@ -1,7 +1,8 @@
+from typing import NoReturn
 import unittest
 
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
 
 class TestUtils(unittest.TestCase):
     def test_code(self):
@@ -86,6 +87,62 @@ class TestUtils(unittest.TestCase):
             ("to youtube", "https://www.youtube.com/@bootdotdev")
         ]
         self.assertEqual(expected, extract_markdown_links(text))
+
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an image ![to boot dev](https://www.boot.dev) and ![to youtube](https://www.youtube.com/@bootdotdev)",
+            TextType.NormalText
+        )
+        new_nodes = split_nodes_image([node]) 
+        expected = [
+            TextNode("This is text with an image ", TextType.NormalText),
+            TextNode("to boot dev", TextType.ImageText, "https://www.boot.dev"),
+            TextNode(" and ", TextType.NormalText),
+            TextNode("to youtube", TextType.ImageText,
+                     "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertEqual(new_nodes, expected)
+
+    def test_split_links(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", 
+            TextType.NormalText,
+        )
+        new_nodes = split_nodes_link([node])
+        expected = [
+            TextNode("This is text with a link ", TextType.NormalText),
+            TextNode("to boot dev", TextType.LinkText, "https://www.boot.dev"),
+            TextNode(" and ", TextType.NormalText),
+            TextNode("to youtube", TextType.LinkText,
+                     "https://www.youtube.com/@bootdotdev")
+        ]
+        self.assertEqual(new_nodes, expected)
+
+    def test_image_at_end(self):
+        node = TextNode("This is text with an ![image](https://i.imgur.com)",
+                        TextType.NormalText)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with an ", TextType.NormalText),
+            TextNode("image", TextType.ImageText, "https://i.imgur.com")
+        ])
+
+    def test_link_with_followed_text(self):
+        node = TextNode("This is text with a link [here](https://x.com) with text that follows", 
+                        TextType.NormalText)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a link ", TextType.NormalText),
+            TextNode("here", TextType.LinkText, "https://x.com"),
+            TextNode(" with text that follows", TextType.NormalText)
+        ])
+
+    def test_link_alone(self):
+        node = TextNode("[link](https://x.com)", TextType.NormalText)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [
+            TextNode("link", TextType.LinkText, "https://x.com")
+        ])
 
 if __name__ == "__main__":
     unittest.main()

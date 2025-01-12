@@ -36,3 +36,40 @@ def extract_markdown_links(text):
     # negative lookbehind moving in hot...says that if the pattern [.*](.*)
     # matches, there can't be a '!' in front (because that would be an image)
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+def split_nodes_image(old_nodes):
+    return split_node_image_text_helper(old_nodes, "![{}]({})",
+                                 extract_markdown_images, TextType.ImageText)
+
+def split_nodes_link(old_nodes):
+    return split_node_image_text_helper(old_nodes, "[{}]({})",
+                                        extract_markdown_links, TextType.LinkText)
+
+# generic function for our extraction
+def split_node_image_text_helper(old_nodes, format_str, extract_fn, text_type):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.NormalText:
+            new_nodes.append(node)
+            continue
+        components = extract_fn(node.text)
+        if len(components) == 0:
+            # nothing to extract, keep node as normal
+            new_nodes.append(node)
+            continue
+
+        text = node.text
+        for comp in components:
+            sections = text.split(format_str.format(comp[0], comp[1]), 1)
+            pre = sections[0]
+            if len(sections) > 1:
+                # reset text only if there is more to process
+                text = sections[1]
+            if len(pre) > 0:
+                new_nodes.append(TextNode(pre, TextType.NormalText))
+            new_nodes.append(TextNode(comp[0], text_type, comp[1]))
+
+        if len(text) > 0:
+            new_nodes.append(TextNode(text, TextType.NormalText))
+
+    return new_nodes
