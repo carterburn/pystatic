@@ -29,6 +29,21 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
     return new_nodes
 
+def split_nodes_bold():
+    def inner(old_nodes):
+        return split_nodes_delimiter(old_nodes, "**", TextType.BoldText)
+    return inner
+
+def split_nodes_italic():
+    def inner(old_nodes):
+        return split_nodes_delimiter(old_nodes, "*", TextType.ItalicText)
+    return inner
+
+def split_nodes_code():
+    def inner(old_nodes):
+        return split_nodes_delimiter(old_nodes, "`", TextType.CodeText)
+    return inner
+
 def extract_markdown_images(text):
     return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
@@ -73,3 +88,14 @@ def split_node_image_text_helper(old_nodes, format_str, extract_fn, text_type):
             new_nodes.append(TextNode(text, TextType.NormalText))
 
     return new_nodes
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.NormalText)]
+    # move through each of our delimited text types and image and links for a
+    # final list of nodes
+    fns = [split_nodes_bold(), split_nodes_italic(), split_nodes_code(),
+           split_nodes_image, split_nodes_link]
+    for f in fns:
+        nodes = f(nodes)
+
+    return nodes

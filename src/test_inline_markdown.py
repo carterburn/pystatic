@@ -2,7 +2,7 @@ from typing import NoReturn
 import unittest
 
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestUtils(unittest.TestCase):
     def test_code(self):
@@ -143,6 +143,24 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(new_nodes, [
             TextNode("link", TextType.LinkText, "https://x.com")
         ])
+
+    def test_text_to_textnode(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(nodes, [
+            TextNode("This is ", TextType.NormalText),
+            TextNode("text", TextType.BoldText),
+            TextNode(" with an ", TextType.NormalText),
+            TextNode("italic", TextType.ItalicText),
+            TextNode(" word and a ", TextType.NormalText),
+            TextNode("code block", TextType.CodeText),
+            TextNode(" and an ", TextType.NormalText),
+            TextNode("obi wan image", TextType.ImageText,
+                     "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.NormalText),
+            TextNode("link", TextType.LinkText, "https://boot.dev"),
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()
