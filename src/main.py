@@ -1,4 +1,4 @@
-from textnode import TextNode, TextType 
+from md_to_html import generate_page_recursive 
 import os
 import shutil
 
@@ -18,7 +18,7 @@ def copy_tree(src_path, dst_path):
 
     for item in os.listdir(src_path):
         if is_dir(src_path, item):
-            print(f"Found a directory @ {os.path.join(src_path, item)}, recursing")
+            print(f"Found a directory @ {os.path.join(src_path, item)}")
             copy_tree(os.path.join(src_path, item), os.path.join(dst_path, item))
         else:
             print(
@@ -26,15 +26,10 @@ def copy_tree(src_path, dst_path):
             shutil.copy(os.path.join(src_path, item), 
                         os.path.join(dst_path, item))
 
-    print(f"Done")
-
-
 def main():
-    node = TextNode("This is a text node", TextType.BoldText, "https://www.boot.dev")
-
-    print(node)
-
+    # copy the static assets
     copy_tree("./static", "./public")
+    generate_page_recursive("./content", "template.html", "./public")
 
 
 if __name__ == "__main__":

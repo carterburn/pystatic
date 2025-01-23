@@ -2,6 +2,8 @@ from block_markdown import block_to_block_type, markdown_to_blocks
 from htmlnode import ParentNode
 from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
+import os
+import pathlib
 
 def text_to_children(text):
     text_nodes = text_to_textnodes(text)
@@ -77,3 +79,36 @@ def markdown_to_html(markdown):
 
     # return the final node
     return ParentNode("div", html_nodes, None)
+
+def extract_title(markdown):
+    h1 = list(filter(lambda line: line.startswith("# "), markdown.split("\n")))
+    if len(h1) != 1:
+        raise ValueError("No Heading 1 in Markdown, invalid for HTML conversion")
+    return h1[0][2:]
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} with {template_path}")
+    with open(template_path, "r") as f:
+        template = f.read()
+    with open(from_path, "r") as f:
+        md = f.read()
+    html = markdown_to_html(md).to_html()
+    title = extract_title(md)
+    final = template.replace("{{ Title }}", title).replace("{{ Content }}", html)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, "w") as f:
+        f.write(final)
+
+def generate_page_recursive(content_path, template_path, output_path):
+    # create the directory to public_path 
+    for item in os.listdir(content_path):
+        if os.path.isfile(os.path.join(content_path, item)):
+            print(f"Generating {os.path.join(content_path, item)}")
+            html_path = os.path.join(output_path, item).replace(".md", ".html")
+            generate_page(os.path.join(content_path, item), template_path,
+                          html_path)
+        else:
+            print(f"Recursing into {os.path.join(content_path, item)}")
+            generate_page_recursive(os.path.join(content_path, item),
+                                    template_path, os.path.join(output_path,
+                                                                item))

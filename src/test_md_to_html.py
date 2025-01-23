@@ -1,6 +1,6 @@
 import unittest
 
-from md_to_html import markdown_to_html
+from md_to_html import extract_title, markdown_to_html
 
 class TestHTMLNode(unittest.TestCase):
     def test_paragraph(self):
@@ -85,3 +85,33 @@ this is paragraph text
             html,
             "<div><blockquote>This is a blockquote block</blockquote><p>this is paragraph text</p></div>",
         )
+
+    def test_heading(self):
+        md = """
+# Title for html
+
+### Heading level 3
+
+Paragraph text
+
+"""
+
+        title = extract_title(md)
+        self.assertEqual(title, "Title for html")
+
+    def test_should_raise(self):
+        md = """
+No heading in this text.
+
+Just paragraphs and
+
+## A Level 2 Heading
+
+"""
+
+        try:
+            _ = extract_title(md)
+        except ValueError as _:
+            self.assertEqual(True, True)
+        except Exception:
+            self.assertEqual(True, False)
